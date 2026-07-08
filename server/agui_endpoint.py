@@ -27,6 +27,7 @@ agui_endpoint.py - AG-UI 协议端点实现
 
 import json
 import logging
+import os
 from typing import AsyncGenerator
 from uuid import uuid4
 
@@ -45,8 +46,13 @@ from agui_adapter import (
     build_run_error_event,
 )
 
-# Agent 运行器
-from agent_runner import create_agent, run_agent_stream, convert_agui_messages_to_msgs
+# Agent 运行器：Mock 模式无需真实 API Key
+if os.environ.get("MOCK_AGENT", "").lower() in ("1", "true", "yes"):
+    from mock_agent_runner import create_mock_agent as create_agent
+    from mock_agent_runner import run_mock_agent_stream as run_agent_stream
+else:
+    from agent_runner import create_agent, run_agent_stream
+from agent_runner import convert_agui_messages_to_msgs
 
 # 调试发布
 from debug_publisher import publisher
