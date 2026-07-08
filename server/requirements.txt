@@ -15,7 +15,7 @@
 fastapi>=0.104.0
 uvicorn[standard]>=0.24.0
 pydantic>=2.11.7
-agentscope>=1.0.14
+agentscope>=1.0.14,<2.0.0
 ag-ui-protocol>=0.1.10
 fakeredis>=2.31.0
 python-dotenv>=1.0.1
