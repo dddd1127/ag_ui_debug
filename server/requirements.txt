@@ -1,0 +1,21 @@
+# AG-UI 协议调试器后端依赖
+# 
+# 说明：
+# 这些依赖可以复用 agentscope-runtime 项目的虚拟环境
+# 如果已在 agentscope-runtime-main/.venv 环境中，可以直接使用该环境
+# 
+# 核心依赖：
+# - fastapi: FastAPI 框架
+# - uvicorn: ASGI 服务器
+# - pydantic: 数据模型验证
+# - agentscope: Agent 框架
+# - ag-ui-protocol: AG-UI 协议包
+# - fakeredis: 模拟 Redis（用于 session）
+
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.11.7
+agentscope>=1.0.14
+ag-ui-protocol>=0.1.10
+fakeredis>=2.31.0
+python-dotenv>=1.0.1

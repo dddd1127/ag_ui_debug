@@ -1,0 +1,575 @@
+/**
+ * DebugPanel.css
+ * 
+ * 调试面板样式文件
+ * 
+ * 设计说明：
+ * - 三栏等宽布局
+ * - 每栏独立滚动
+ * - 深色主题，代码区域使用等宽字体
+ * - JSON 数据区域支持横向滚动
+ */
+
+/* 调试面板容器 */
+.debug-panel {
+  display: flex;
+  height: 100%;
+  background-color: var(--bg-primary);
+}
+
+/* 调试栏 */
+.debug-column {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-color);
+  overflow: hidden;
+  height: 100%;
+}
+
+.debug-column:last-child {
+  border-right: none;
+}
+
+/* 面板头部 */
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.panel-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.panel-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 2px 6px;
+  background-color: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+/* 面板内容区域 */
+.panel-content {
+  flex: 1 1 0%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--spacing-sm);
+  min-height: 0;
+}
+
+/* 空状态 */
+.empty-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  padding: var(--spacing-lg);
+}
+
+.empty-icon {
+  font-size: 36px;
+  margin-bottom: var(--spacing-sm);
+  opacity: 0.5;
+}
+
+.empty-text {
+  font-size: 13px;
+}
+
+/* 请求头部 */
+.request-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  font-size: 12px;
+}
+
+.request-time {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.request-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.summary-tag {
+  font-size: 10px;
+  margin: 0;
+}
+
+/* 请求详情 */
+.request-detail {
+  padding: var(--spacing-sm);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  margin-top: var(--spacing-xs);
+}
+
+/* 转换头部 */
+.transform-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  font-size: 12px;
+}
+
+.transform-time {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.transform-desc {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+/* 转换详情 */
+.transform-detail {
+  padding: var(--spacing-sm);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  margin-top: var(--spacing-xs);
+}
+
+/* 字段映射 */
+.field-mapping {
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-sm);
+  background-color: var(--bg-hover);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--color-primary);
+}
+
+.mapping-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.mapping-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 11px;
+  font-family: var(--font-mono);
+  margin-bottom: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.mapping-from {
+  color: var(--color-warning);
+}
+
+.mapping-arrow {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.mapping-to {
+  color: var(--color-success);
+}
+
+/* 转换区域 */
+.transform-section {
+  margin-bottom: var(--spacing-md);
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+}
+
+.section-title.input {
+  color: var(--color-warning);
+  background-color: rgba(250, 173, 20, 0.1);
+}
+
+.section-title.output {
+  color: var(--color-success);
+  background-color: rgba(82, 196, 26, 0.1);
+}
+
+/* Agent 事件头部 */
+.agent-event-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  font-size: 12px;
+}
+
+.agent-event-time {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+/* Agent 事件详情 */
+.agent-event-detail {
+  padding: var(--spacing-sm);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  margin-top: var(--spacing-xs);
+}
+
+.event-type-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--bg-hover);
+  border-radius: var(--radius-sm);
+}
+
+/* 工具调用信息 */
+.tool-call-info {
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-sm);
+  background-color: rgba(250, 173, 20, 0.05);
+  border: 1px solid var(--color-warning);
+  border-radius: var(--radius-sm);
+}
+
+.tool-call-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-warning);
+  margin-bottom: var(--spacing-sm);
+}
+
+.tool-call-args,
+.tool-call-result {
+  margin-bottom: var(--spacing-sm);
+}
+
+.args-label,
+.result-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.args-content,
+.result-content {
+  margin: 0;
+  padding: var(--spacing-sm);
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* 步骤视图样式 */
+.step-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.step-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 13px;
+}
+
+.step-icon {
+  font-size: 16px;
+}
+
+.step-number {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.step-name {
+  color: var(--text-secondary);
+}
+
+.step-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+/* 步骤详情 */
+.step-detail {
+  padding: var(--spacing-sm);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  margin-top: var(--spacing-xs);
+}
+
+.step-time-range {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  margin-bottom: var(--spacing-sm);
+  padding-bottom: var(--spacing-xs);
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* 步骤输入/输出区域 */
+.step-input-section,
+.step-output-section {
+  margin-bottom: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid;
+}
+
+.step-input-section {
+  background-color: rgba(250, 173, 20, 0.05);
+  border-left-color: var(--color-warning);
+}
+
+.step-output-section {
+  background-color: rgba(82, 196, 26, 0.05);
+  border-left-color: var(--color-success);
+}
+
+.step-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+}
+
+.step-section-label.input {
+  color: var(--color-warning);
+}
+
+.step-section-label.output {
+  color: var(--color-success);
+}
+
+.step-content {
+  margin: 0;
+  padding: var(--spacing-xs);
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* 步骤详情切换 */
+.step-detail-toggle {
+  margin-top: var(--spacing-xs);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.step-detail-toggle summary {
+  cursor: pointer;
+  padding: var(--spacing-xs) 0;
+  user-select: none;
+}
+
+.step-detail-toggle summary:hover {
+  color: var(--text-primary);
+}
+
+/* 步骤事件列表 */
+.step-events-section {
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--border-color);
+}
+
+.step-events-list {
+  margin: var(--spacing-xs) 0;
+}
+
+/* 可展开的事件条目 */
+.step-event-detail {
+  border-bottom: 1px dashed var(--border-color);
+}
+
+.step-event-detail:last-child {
+  border-bottom: none;
+}
+
+.step-event-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: 11px;
+  font-family: var(--font-mono);
+  padding: var(--spacing-xs) 0;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+}
+
+.step-event-summary::-webkit-details-marker {
+  display: none;
+}
+
+.step-event-summary::before {
+  content: '▶';
+  font-size: 8px;
+  color: var(--text-muted);
+  transition: transform 0.2s;
+  margin-right: 2px;
+}
+
+.step-event-detail[open] .step-event-summary::before {
+  content: '▼';
+}
+
+.step-event-index {
+  color: var(--text-muted);
+  min-width: 20px;
+}
+
+.step-event-time {
+  color: var(--text-muted);
+}
+
+.step-event-delta-preview {
+  color: var(--text-secondary);
+  font-size: 10px;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.step-event-detail-content {
+  padding: var(--spacing-xs) 0 var(--spacing-xs) 24px;
+}
+
+.step-event-delta-content {
+  margin-bottom: var(--spacing-xs);
+  padding: var(--spacing-xs);
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-sm);
+  border-left: 2px solid var(--color-primary);
+}
+
+.delta-label {
+  font-size: 10px;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.delta-value {
+  margin: var(--spacing-xs) 0 0 0;
+  padding: var(--spacing-xs);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+/* 事件数据 */
+.event-data {
+  margin-top: var(--spacing-sm);
+}
+
+.data-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+/* JSON 代码块 */
+.json-code {
+  margin: 0;
+  padding: var(--spacing-sm);
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 800px;
+  overflow-y: auto;
+}
+
+/* 折叠面板样式覆盖 */
+.ant-collapse {
+  background: transparent;
+}
+
+.ant-collapse-item {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.ant-collapse-header {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  color: var(--text-primary);
+}
+
+.ant-collapse-content {
+  background: transparent;
+  border-top: none;
+}
+
+.ant-collapse-content-box {
+  padding: 0;
+}
+
+/* Ant Design 标签样式覆盖 */
+.ant-tag {
+  font-size: 10px;
+  margin: 0;
+}
+
+/* 响应式适配 */
+@media (max-width: 1200px) {
+  .debug-panel {
+    flex-direction: column;
+  }
+  
+  .debug-column {
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    min-height: 200px;
+  }
+  
+  .debug-column:last-child {
+    border-bottom: none;
+  }
+}

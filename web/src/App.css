@@ -1,0 +1,167 @@
+/**
+ * App.css
+ * 
+ * 全局样式文件：定义整个应用的外观和布局
+ * 
+ * 设计原则：
+ * - 深色主题（适合长时间调试使用）
+ * - 使用 CSS 变量便于统一修改主题色
+ * - 响应式布局，适配不同屏幕尺寸
+ */
+
+/* 全局变量定义 */
+:root {
+  /* 主色调 */
+  --color-primary: #1677ff;
+  --color-success: #52c41a;
+  --color-warning: #faad14;
+  --color-error: #f5222d;
+  
+  /* 背景色 */
+  --bg-primary: #0f0f0f;
+  --bg-secondary: #1a1a1a;
+  --bg-tertiary: #242424;
+  --bg-hover: #2a2a2a;
+  
+  /* 文字颜色 */
+  --text-primary: #e0e0e0;
+  --text-secondary: #a0a0a0;
+  --text-muted: #666666;
+  
+  /* 边框 */
+  --border-color: #333333;
+  
+  /* 间距 */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  
+  /* 字体 */
+  --font-mono: 'Consolas', 'Monaco', 'Courier New', monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  
+  /* 圆角 */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+}
+
+/* 全局重置 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* 应用容器 */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* 顶部标题栏 */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+  height: 48px;
+}
+
+.app-header h1 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* 连接状态指示 */
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-error);
+  transition: background-color 0.3s ease;
+}
+
+.status-dot.connected {
+  background-color: var(--color-success);
+}
+
+/* 主内容区域 */
+.app-main {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* 拖拽条样式 */
+.split-pane-resizer {
+  background: var(--border-color);
+  transition: background 0.2s;
+}
+
+.split-pane-resizer:hover {
+  background: var(--color-primary);
+}
+
+.split-pane-resizer.vertical {
+  width: 100%;
+  height: 4px;
+  cursor: row-resize;
+}
+
+.split-pane-resizer.horizontal {
+  width: 4px;
+  height: 100%;
+  cursor: col-resize;
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+  .app-header h1 {
+    font-size: 14px;
+  }
+  
+  .connection-status {
+    font-size: 10px;
+  }
+}

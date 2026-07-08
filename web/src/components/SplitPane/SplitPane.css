@@ -1,0 +1,76 @@
+/**
+ * SplitPane.css
+ * 
+ * 分栏组件样式文件
+ * 
+ * 设计说明：
+ * - 拖拽条使用高对比度颜色，方便用户识别
+ * - 拖拽时显示高亮效果
+ * - 支持上下和左右两种方向
+ */
+
+/* 分栏容器 */
+.split-pane {
+  display: flex;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+/* 垂直方向（上下分栏） */
+.split-pane.vertical {
+  flex-direction: column;
+}
+
+/* 水平方向（左右分栏） */
+.split-pane.horizontal {
+  flex-direction: row;
+}
+
+/* 子元素区域 */
+.split-pane-pane {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 拖拽条 */
+.split-pane-resizer {
+  background: var(--border-color);
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.split-pane-resizer:hover {
+  background: var(--color-primary);
+}
+
+/* 垂直方向拖拽条 */
+.split-pane-resizer.vertical {
+  width: 100%;
+  height: 4px;
+  cursor: row-resize;
+}
+
+/* 水平方向拖拽条 */
+.split-pane-resizer.horizontal {
+  width: 4px;
+  height: 100%;
+  cursor: col-resize;
+}
+
+/* 拖拽时的特殊样式 */
+.split-pane-resizer.active,
+.split-pane-resizer:active {
+  background: var(--color-primary);
+}
+
+/* 拖拽时整个容器的样式 */
+.split-pane.dragging {
+  pointer-events: none;
+}
+
+.split-pane.dragging .split-pane-resizer {
+  background: var(--color-primary);
+}
