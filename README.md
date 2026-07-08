@@ -189,6 +189,19 @@ uvicorn main:app --host 127.0.0.1 --port 8090 --reload
 - 健康检查: http://127.0.0.1:8090/health
 - API 文档: http://127.0.0.1:8090/docs (Swagger UI)
 
+### 方式三：使用 Docker 一键启动（推荐用于快速演示）
+
+```bash
+# 构建并启动（默认使用 Mock Agent 模式，无需配置 API Key）
+docker-compose up --build
+
+# 或者只构建镜像
+docker build -t ag-ui-debug .
+docker run -p 8090:8090 ag-ui-debug
+```
+
+启动后访问 http://localhost:8090 即可使用完整界面。
+
 ### 2. 启动前端
 
 ```bash

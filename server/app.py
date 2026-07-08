@@ -10,9 +10,13 @@ app.py - FastAPI 应用构建文件
 - 配置生命周期（lifespan）
 """
 
+import os
 from contextlib import asynccontextmanager
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from agui_endpoint import agui_router
 from debug_ws import debug_router
@@ -74,5 +78,13 @@ def create_app() -> FastAPI:
     async def agent_config():
         from agent_runner import get_agent_config
         return get_agent_config()
+
+    # 生产环境：如果存在构建好的前端静态文件，直接由后端提供
+    # 必须放在最后，作为 fallback，避免覆盖 API 路由
+    if os.environ.get("SERVE_STATIC", "").lower() in ("1", "true", "yes"):
+        current_dir = Path(__file__).parent
+        static_dir = current_dir.parent / "web" / "dist"
+        if static_dir.exists():
+            app.mount("/", StaticFiles(directory=str(static_dir), html=True), name="static")
 
     return app

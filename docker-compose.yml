@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  ag-ui-debug:
+    build: .
+    ports:
+      - "8090:8090"
+    environment:
+      - MOCK_AGENT=true
+      - SERVE_STATIC=true
+      - HOST=0.0.0.0
