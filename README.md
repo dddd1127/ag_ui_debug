@@ -30,6 +30,21 @@
 
 ---
 
+## 架构图
+
+```mermaid
+flowchart TD
+    FE[前端 React + Vite] -->|POST /ag-ui| BE[FastAPI 后端]
+    BE -->|RunAgentInput| ADAPTER1[agui_adapter 协议转换]
+    ADAPTER1 -->|AgentRequest| AGENT[AgentScope Agent]
+    AGENT -->|Agent Event| ADAPTER2[agui_adapter 事件转换]
+    ADAPTER2 -->|AG-UI SSE Events| FE
+    ADAPTER2 -->|调试信息| WS[WebSocket /debug/ws]
+    WS --> FE
+```
+
+---
+
 ## 项目结构
 
 ```
