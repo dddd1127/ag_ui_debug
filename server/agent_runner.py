@@ -36,15 +36,24 @@ from agentscope.pipeline import stream_printing_messages
 logger = logging.getLogger(__name__)
 
 # 默认配置
-DEFAULT_API_KEY = os.getenv(
-    "ANTHROPIC_AUTH_TOKEN",
-    "ark-e825c401-2b79-4b62-a3ae-5a6a971f33fd-2d501",
-)
+# API Key 必须从环境变量读取，避免泄露到代码仓库
 DEFAULT_BASE_URL = os.getenv(
     "ANTHROPIC_BASE_URL",
-    "https://ark.cn-beijing.volces.com/api/coding/v3",
+    "https://opencode.ai/zen/go/v1",
 )
-DEFAULT_MODEL = os.getenv("ANTHROPIC_MODEL", "doubao-seed-code-preview-latest")
+DEFAULT_MODEL = os.getenv("ANTHROPIC_MODEL", "kimi-k2.6")
+
+
+def _get_api_key() -> str:
+    """从环境变量读取 API Key，未设置时给出明确提示。"""
+    key = os.getenv("ANTHROPIC_AUTH_TOKEN")
+    if not key:
+        raise ValueError(
+            "缺少环境变量 ANTHROPIC_AUTH_TOKEN。\n"
+            "请在运行前设置：export ANTHROPIC_AUTH_TOKEN='your-api-key'\n"
+            "或者创建 .env 文件并配置该变量。"
+        )
+    return key
 
 # wttr.in 天气服务地址（免费、无需 API Key）
 WTTR_URL = os.getenv("WTTR_URL", "https://wttr.in")
@@ -112,7 +121,7 @@ def get_weather(location: str) -> str:
 
 def create_agent(
     model_name: str = DEFAULT_MODEL,
-    api_key: str = DEFAULT_API_KEY,
+    api_key: str | None = None,
     base_url: str = DEFAULT_BASE_URL,
 ) -> ReActAgent:
     """
@@ -120,7 +129,7 @@ def create_agent(
 
     参数：
     - model_name: 模型名称
-    - api_key: API 密钥
+    - api_key: API 密钥，默认从 ANTHROPIC_AUTH_TOKEN 环境变量读取
     - base_url: API 基础 URL
 
     返回：
@@ -130,10 +139,10 @@ def create_agent(
     toolkit = Toolkit()
     toolkit.register_tool_function(get_weather)
 
-    # 创建模型
+    # 创建模型（API Key 未传入时从环境变量读取）
     model = OpenAIChatModel(
         model_name=model_name,
-        api_key=api_key,
+        api_key=api_key or _get_api_key(),
         stream=True,
         client_kwargs={"base_url": base_url},
     )
@@ -442,8 +451,8 @@ def get_agent_config() -> dict:
     返回：
     - 配置字典（用于展示）
     """
-    api_key = DEFAULT_API_KEY
-    masked_key = api_key[:4] + "****" + api_key[-4:] if len(api_key) > 8 else "****"
+    api_key = os.getenv("ANTHROPIC_AUTH_TOKEN", "")
+    masked_key = api_key[:4] + "****" + api_key[-4:] if len(api_key) > 8 else "未配置"
 
     return {
         "model": DEFAULT_MODEL,

@@ -111,6 +111,29 @@ ag_ui_debug/
 - Node.js 18+（前端开发）
 - 已安装 agentscope-runtime 依赖（包括 `ag-ui-protocol` 和 `agentscope`）
 
+### 环境变量配置
+
+后端运行需要配置 API Key，支持以下两种方式：
+
+**方式一：直接导出环境变量**
+
+```bash
+export ANTHROPIC_AUTH_TOKEN="your-api-key"
+# 可选
+export ANTHROPIC_BASE_URL="https://opencode.ai/zen/go/v1"
+export ANTHROPIC_MODEL="kimi-k2.6"
+```
+
+**方式二：使用 .env 文件**
+
+```bash
+cd ag_ui_debug/server
+cp .env.example .env
+# 编辑 .env，填入你的 ANTHROPIC_AUTH_TOKEN
+```
+
+> **注意**：不要把真实的 `.env` 文件提交到 Git，`.gitignore` 已将其排除。
+
 ### 1. 启动后端
 
 **方式一：使用项目虚拟环境（推荐）**
