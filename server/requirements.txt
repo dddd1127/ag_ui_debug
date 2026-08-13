@@ -19,6 +19,10 @@ pydantic>=2.11.7
 # 2.x 将 ToolUseBlock 改名为 ToolCallBlock，本项目代码基于 1.x 的 ToolUseBlock，
 # 装 2.x 会导致 ImportError。用 == 消除 pip 解析歧义，避免被装成 2.x。
 agentscope==1.0.21
+# 关键：agentscope 1.x 依赖 mcp，但没设上限，会被装成 mcp 2.0。
+# mcp 2.0 移除了 streamablehttp_client，导致 agentscope 导入失败。
+# 锁在 <2.0.0，1.29.0 是最后一个含 streamablehttp_client 的版本。
+mcp>=1.13,<2.0.0
 ag-ui-protocol>=0.1.10
 fakeredis>=2.31.0
 python-dotenv>=1.0.1
