@@ -1,32 +1,72 @@
+<div align="center">
+
 # AG-UI 协议调试器
 
-一个独立的 AG-UI 协议调试与可视化系统，从零实现 AG-UI 协议兼容服务，并配套可视化调试界面。
+**从零手搓 AG-UI 协议栈 · 把 Agent 内部黑盒变成可观测的三栏调试台**
+
+[![Tests](https://github.com/dddd1127/ag_ui_debug/actions/workflows/test.yml/badge.svg)](https://github.com/dddd1127/ag_ui_debug/actions/workflows/test.yml)
+[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-18-61DAFB.svg)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6.svg)](https://www.typescriptlang.org/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](#一键启动-docker)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+🚀 **[在线 Demo](#在线-demo)** ｜ 📺 **[演示录屏](#演示录屏)** ｜ 🔧 **[一键本地运行](#一键启动-docker)**
+
+</div>
 
 ---
 
-## 项目概述
+## 这是什么
 
-本项目旨在深入理解 AG-UI 协议的工作原理，通过独立实现完整的协议栈，并配套可视化界面展示协议的完整运行流程。
+大模型 Agent 应用跑起来后,有个绕不开的痛点:**Agent 内部到底发生了什么?** 工具调用、流式文本、协议转换--这些过程藏在后端日志里,前端只看到最终结果,调试时两眼一抹黑。
 
-### 核心功能
+这个项目从零实现了一套 **AG-UI 协议兼容服务 + 三栏可视化调试台**:
 
-1. **AG-UI 协议服务**：独立的 FastAPI 后端服务，完整实现 AG-UI 协议
-   - 接收 `RunAgentInput` 请求
-   - 驱动 agentscope Agent 运行
-   - 返回 SSE 流式响应
-   - 支持 WebSocket 调试信息推送
+- **后端**:独立用 FastAPI 实现 AG-UI 协议端点,把 agentscope ReActAgent 的内部消息流,**逐事件**转换成 AG-UI 标准事件,通过 SSE 流式吐给前端。
+- **前端**:聊天界面 + 三栏调试面板,实时展示"客户端原始请求 / 协议双向转换 / Agent 内部事件"的全过程。
 
-2. **可视化调试界面**：React 前端，展示协议运行全流程
-   - **Chat 聊天界面**：与大模型交互
-   - **调试监控面板**：三栏展示协议运行过程
-     - 左栏：客户端发送的原始 JSON 请求
-     - 中栏：AG-UI 协议 ↔ Agent 内部消息的双向转换
-     - 右栏：Agent 内部运行事件（推理、工具调用、状态变化）
+**一句话**:把 Agent 的黑盒拆开给你看,而且是用标准协议(AG-UI)拆的,不是 hack。
 
-3. **协议转换可视化**：完整展示 AG-UI 协议的转换过程
-   - 请求转换：`RunAgentInput` → `AgentRequest`
-   - 响应转换：`Agent Event` → `AG-UI Events`
-   - 字段映射：`threadId` → `session_id`，`runId` → `id` 等
+---
+
+## 在线 Demo
+
+> 🚧 部署中,链接即将上线(使用 Mock Agent 模式,无需 API Key 即可体验完整流程)。
+
+如果暂时无法访问在线版,直接看下方录屏,或本地一键启动(30 秒):
+
+```bash
+docker-compose up --build   # Mock 模式,无需任何配置
+# 打开 http://localhost:8090
+```
+
+---
+
+## 演示录屏
+
+![AG-UI 调试器运行效果](docs/screenshot.png)
+
+**上半部分**是聊天界面,与 Agent 正常对话;**下半部分**是三栏调试面板,实时观察:
+
+- **左栏**:客户端发出的原始 JSON 请求(`RunAgentInput`)
+- **中栏**:AG-UI 协议与 agentscope 消息的**双向转换**(字段怎么映射、增量 delta 怎么算)
+- **右栏**:Agent 内部事件(文本流、工具调用开始/参数/结果、状态变化)
+
+> 📺 录屏 GIF 即将补充(展示天气查询触发工具调用的完整事件流)。
+
+---
+
+## 为什么做这个(技术价值)
+
+这不是"调个 API 包个页面"的项目,核心是**协议工程**:
+
+1. **协议层与业务层解耦**:`agui_adapter` 是纯协议转换层,不做增量计算;`agent_runner` 负责把 agentscope 的累积全量文本转成增量 delta。职责分离,转换器可独立复用到任何 Agent 框架。
+2. **真实趟过的坑**:事件类型命名前后端不一致(SCREAMING_SNAKE vs CamelCase)导致 V2 通路静默失效;`ToolResultBlock.output` 可能是 list 不是字符串;客户端断开时 SSE 生成器的清理……这些 bug 都修过并沉淀成了规则。
+3. **可观测性优先**:业务流走 SSE,调试流走独立 WebSocket,物理隔离不污染协议。调试面板看到的 delta 和业务流收到的是**同一份数据**,即"调试即真实"。
+
+> 想了解每个技术决策的代码级 rationale,见 [`docs/`](docs/) 下的技术详解。
 
 ---
 
@@ -38,18 +78,118 @@ flowchart TD
     BE -->|RunAgentInput| ADAPTER1[agui_adapter 协议转换]
     ADAPTER1 -->|AgentRequest| AGENT[AgentScope Agent]
     AGENT -->|Agent Event| ADAPTER2[agui_adapter 事件转换]
-    ADAPTER2 -->|AG-UI SSE Events| FE
+    ADAPTER2 -->|AG-UI SSE Events| BE2[SSE 流 -> 前端]
     ADAPTER2 -->|调试信息| WS[WebSocket /debug/ws]
     WS --> FE
 ```
 
+**数据流**:前端发请求 → adapter 转成 agentscope 消息 → ReActAgent 流式推理 → adapter 把内部消息逐事件转成 AG-UI 事件 → SSE 流式吐给前端 + WebSocket 同步推调试面板。
+
 ---
 
-## 演示
+## 技术栈
 
-![AG-UI 调试器界面](docs/screenshot.png)
+| 层 | 技术 | 作用 |
+|------|------|------|
+| **后端** | FastAPI · Uvicorn · Pydantic | AG-UI 协议端点、SSE 流式响应、请求校验 |
+| **Agent** | agentscope 1.x · ReActAgent | 工具调用、流式推理 |
+| **协议** | ag-ui-protocol | AG-UI 事件类型定义 |
+| **前端** | React 18 · TypeScript · Vite | 聊天界面 + 三栏调试面板 |
+| **可视化** | Ant Design 5 · react-json-view · react-markdown | JSON 可视化、Markdown 渲染 |
+| **工程** | Docker · GitHub Actions · pytest | 一键部署、CI 门禁、后端单测+集成测试 |
 
-上图展示了 AG-UI 调试器的运行效果：上半部分为聊天界面，下半部分为三栏调试面板，可实时观察协议转换、Agent 事件和原始请求。
+---
+
+## 一键启动(Docker)
+
+Mock Agent 模式,无需任何 API Key,**30 秒可见效果**:
+
+```bash
+git clone https://github.com/dddd1127/ag_ui_debug.git
+cd ag_ui_debug
+docker-compose up --build
+# 打开 http://localhost:8090
+```
+
+Mock 模式使用本地事件回放,完整展示协议转换全流程。需要接真实大模型,见[接入真实模型](#接入真实模型可选)。
+
+---
+
+## 本地开发启动
+
+<details>
+<summary>展开:分别启动前后端(开发模式)</summary>
+
+### 后端
+
+```bash
+cd ag_ui_debug/server
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+
+# Mock 模式(无需 API Key)
+MOCK_AGENT=true python main.py
+
+# 或真实模型模式
+cp .env.example .env  # 编辑填入 ANTHROPIC_AUTH_TOKEN
+python main.py
+```
+
+后端地址:`http://127.0.0.1:8090` · API 文档:`http://127.0.0.1:8090/docs`
+
+### 前端
+
+```bash
+cd ag_ui_debug/web
+npm install
+npm run dev
+```
+
+前端地址:`http://localhost:5173`(已配置代理转发后端)
+
+</details>
+
+---
+
+## 接入真实模型(可选)
+
+默认 Mock 模式不调真实模型。接入大模型只需配置环境变量:
+
+```bash
+export ANTHROPIC_AUTH_TOKEN="your-api-key"
+export ANTHROPIC_BASE_URL="https://opencode.ai/zen/go/v1"  # 可选
+export ANTHROPIC_MODEL="kimi-k2.6"                          # 可选
+```
+
+已验证兼容 **Kimi (GLM)** 及任意 **Anthropic 兼容 API**。Agent 内置 `get_weather` 工具(调用 wttr.in 免费 API),支持中英文城市天气查询。
+
+---
+
+## 核心功能
+
+### 1. AG-UI 协议端点(`POST /ag-ui`)
+
+接收标准 `RunAgentInput`,返回 SSE 流式响应,覆盖完整事件类型:
+
+```
+RUN_STARTED → TEXT_MESSAGE_START → TEXT_MESSAGE_CONTENT → TEXT_MESSAGE_END
+            → TOOL_CALL_START → TOOL_CALL_ARGS → TOOL_CALL_END → TOOL_CALL_RESULT
+            → RUN_FINISHED / RUN_ERROR
+```
+
+### 2. 三栏调试面板
+
+| 栏 | 内容 |
+|---|---|
+| 左栏 - Client JSON | 客户端发送的原始 `RunAgentInput` 请求 |
+| 中栏 - AG-UI Transform | 协议双向转换过程(字段映射、增量 delta 计算) |
+| 右栏 - Agent Info | Agent 内部事件(文本流、工具调用、状态变化) |
+
+### 3. 协议转换可视化
+
+**请求转换**:`RunAgentInput` → agentscope `Msg`(`threadId`→`session_id`、`runId`→`id`、role 映射、tool_calls → `ToolUseBlock`)
+
+**响应转换**:agentscope `Msg` → AG-UI 事件(`Content(Text)`→`TEXT_MESSAGE_*`、`tool_use`→`TOOL_CALL_*`)
 
 ---
 
@@ -57,423 +197,69 @@ flowchart TD
 
 ```
 ag_ui_debug/
-├── README.md                    # 本文档
-├── server/                      # 后端服务
-│   ├── main.py                 # 入口：启动 Uvicorn
-│   ├── app.py                  # FastAPI 应用构建
-│   ├── agui_endpoint.py      # POST /ag-ui 端点（核心）
-│   ├── agui_adapter.py       # AG-UI ↔ Agent 转换器（核心）
-│   ├── agent_runner.py       # Agent 创建与运行
-│   ├── debug_ws.py           # WebSocket 调试端点
-│   ├── debug_publisher.py    # 调试信息发布
-│   ├── requirements.txt       # 依赖声明
-│   └── README.md             # 后端详细文档
-└── web/                        # 前端界面
-    ├── package.json           # 项目依赖
-    ├── vite.config.ts         # Vite 配置（含代理）
-    ├── tsconfig.json          # TypeScript 配置
-    ├── index.html             # 入口 HTML
+├── server/                      # 后端:AG-UI 协议服务
+│   ├── main.py                  # 入口(Uvicorn 启动)
+│   ├── app.py                   # FastAPI 应用
+│   ├── agui_endpoint.py         # POST /ag-ui 端点(SSE 流 + 断开清理)
+│   ├── agui_adapter.py          # AG-UI ↔ agentscope 协议转换(核心)
+│   ├── agent_runner.py          # Agent 运行 + 全量→增量 delta 计算(核心)
+│   ├── debug_ws.py              # WebSocket 调试端点
+│   ├── mock_agent_runner.py     # Mock 模式(无需 API Key 演示)
+│   └── tests/                   # pytest 单测 + 集成测试
+└── web/                         # 前端:可视化调试台
     └── src/
-        ├── main.tsx           # React 挂载点
-        ├── App.tsx            # 根组件（布局控制器）
-        ├── App.css            # 全局样式（深色主题）
         ├── hooks/
-        │   ├── useAguiSSE.ts   # AG-UI SSE 通信 Hook
-        │   └── useDebugWS.ts   # WebSocket 调试连接 Hook
-        ├── utils/
-        │   ├── aguiClient.ts   # AG-UI 客户端工具
-        │   └── jsonFormatter.ts # JSON 格式化工具
+        │   ├── useAguiSSE.ts    # AG-UI SSE 通信 Hook
+        │   └── useDebugWS.ts    # WebSocket 调试连接 Hook
         └── components/
-            ├── ChatPanel/      # 聊天界面
-            │   ├── index.tsx
-            │   ├── MessageList.tsx
-            │   ├── MessageInput.tsx
-            │   └── types.ts
-            ├── DebugPanel/     # 调试监控面板（三栏）
-            │   ├── index.tsx
-            │   ├── ClientJsonView.tsx
-            │   ├── AguiTransformView.tsx
-            │   └── AgentInfoView.tsx
-            └── SplitPane/      # 可调整分栏组件
-                └── index.tsx
+            ├── ChatPanel/       # 聊天界面
+            └── DebugPanel/      # 三栏调试面板
 ```
 
 ---
 
-## 前后端框架
-
-### 后端框架
-
-| 技术 | 说明 |
-|------|------|
-| **FastAPI** | Web 框架，处理 HTTP 和 WebSocket 请求 |
-| **Uvicorn** | ASGI 服务器，运行 FastAPI 应用 |
-| **Pydantic** | 数据模型验证，用于 AG-UI 协议类型 |
-| **agentscope** | Agent 框架，驱动 ReActAgent 运行 |
-| **ag-ui-protocol** | AG-UI 协议包，提供协议类型定义 |
-| **fakeredis** | 模拟 Redis，用于开发环境 session |
-
-### 前端框架
-
-| 技术 | 说明 |
-|------|------|
-| **React 18** | UI 框架，函数式组件 + Hooks |
-| **TypeScript** | 类型安全，接口定义 |
-| **Vite** | 构建工具，开发服务器 |
-| **Ant Design 5** | UI 组件库（Collapse, Tag, Input 等） |
-| **react-markdown** | Markdown 渲染（助手消息） |
-| **react-json-view** | JSON 可视化（调试数据） |
-
----
-
-## 启动方式
-
-### 前置条件
-
-- Python 3.10+（使用 agentscope-runtime 项目的虚拟环境）
-- Node.js 18+（前端开发）
-- 已安装 agentscope-runtime 依赖（包括 `ag-ui-protocol` 和 `agentscope`）
-
-### 环境变量配置
-
-后端运行需要配置 API Key，支持以下两种方式：
-
-**方式一：直接导出环境变量**
+## 测试
 
 ```bash
-export ANTHROPIC_AUTH_TOKEN="your-api-key"
-# 可选
-export ANTHROPIC_BASE_URL="https://opencode.ai/zen/go/v1"
-export ANTHROPIC_MODEL="kimi-k2.6"
+cd server
+MOCK_AGENT=true pytest -v
 ```
 
-**方式二：使用 .env 文件**
-
-```bash
-cd ag_ui_debug/server
-cp .env.example .env
-# 编辑 .env，填入你的 ANTHROPIC_AUTH_TOKEN
-```
-
-> **注意**：不要把真实的 `.env` 文件提交到 Git，`.gitignore` 已将其排除。
-
-### 1. 启动后端
-
-**方式一：使用项目虚拟环境（推荐）**
-
-```bash
-# 进入 agentscope-runtime 项目根目录
-cd /path/to/agentscope-runtime-main
-
-# 激活虚拟环境
-conda activate /home/aiagent/文档/系统组-AI学习/agentscope-runtime-main/.venv/
-
-# 进入后端目录
-cd ag_ui_debug/server
-
-# 启动服务
-python main.py
-```
-
-**方式二：使用 uvicorn 命令**
-
-```bash
-cd ag_ui_debug/server
-uvicorn main:app --host 127.0.0.1 --port 8090 --reload
-```
-
-后端启动后：
-- HTTP API: http://127.0.0.1:8090
-- AG-UI 端点: http://127.0.0.1:8090/ag-ui
-- WebSocket 调试: ws://127.0.0.1:8090/debug/ws
-- 健康检查: http://127.0.0.1:8090/health
-- API 文档: http://127.0.0.1:8090/docs (Swagger UI)
-
-### 方式三：使用 Docker 一键启动（推荐用于快速演示）
-
-```bash
-# 构建并启动（默认使用 Mock Agent 模式，无需配置 API Key）
-docker-compose up --build
-
-# 或者只构建镜像
-docker build -t ag-ui-debug .
-docker run -p 8090:8090 ag-ui-debug
-```
-
-启动后访问 http://localhost:8090 即可使用完整界面。
-
-### 2. 启动前端
-
-```bash
-# 进入前端目录
-cd ag_ui_debug/web
-
-# 安装依赖
-npm install
-
-# 启动开发服务器
-npm run dev
-```
-
-前端启动在 http://localhost:5173
-
-### 3. 访问应用
-
-打开浏览器访问 http://localhost:5173
-
-在聊天界面输入消息，即可查看调试面板的实时数据。
-
----
-
-## 快速测试
-
-### 后端测试
-
-```bash
-# 测试健康检查
-curl http://127.0.0.1:8090/health
-
-# 测试 AG-UI 端点（普通对话）
-curl -X POST http://127.0.0.1:8090/ag-ui \
-  -H "Content-Type: application/json" \
-  -d '{
-    "threadId": "thread_test",
-    "runId": "run_test",
-    "messages": [
-      {
-        "id": "msg_1",
-        "role": "user",
-        "content": "你好"
-      }
-    ],
-    "tools": [],
-    "context": [],
-    "forwardedProps": {}
-  }'
-
-# 测试 AG-UI 端点（天气查询，触发工具调用）
-curl -X POST http://127.0.0.1:8090/ag-ui \
-  -H "Content-Type: application/json" \
-  -d '{
-    "threadId": "thread_weather",
-    "runId": "run_weather",
-    "messages": [
-      {
-        "id": "msg_1",
-        "role": "user",
-        "content": "北京天气如何？"
-      }
-    ],
-    "tools": [],
-    "context": [],
-    "forwardedProps": {}
-  }'
-
-# 测试 WebSocket（需要 wscat）
-# npm install -g wscat
-wscat -c ws://127.0.0.1:8090/debug/ws
-```
-
-### 前端测试
-
-1. 打开浏览器访问 http://localhost:5173
-2. 在聊天界面输入消息
-3. 查看调试面板的三栏数据
-4. 查看浏览器开发者工具的 Network 和 WebSocket 面板
-
----
-
-## 核心功能详解
-
-### 1. 天气查询工具（get_weather）
-
-Agent 内置 `get_weather` 工具，支持查询全球城市的实时天气：
-
-- **数据源**：[wttr.in](https://wttr.in) 免费 API，无需注册和 API Key
-- **语言支持**：中文城市名（"北京"、"上海"）和英文（"Beijing"、"Tokyo"）
-- **返回信息**：城市、天气状况、温度、体感温度、湿度、风速、能见度、紫外线指数
-- **错误处理**：超时、网络断开、城市名错误等场景均有友好提示
-
-使用示例：
-```
-用户：北京天气如何？
-Agent：🔧 调用 get_weather(location="北京")
-       ✅ 📍 Beijing, China
-          🌤 天气：晴
-          🌡 温度：23°C（体感 25°C）
-          💧 湿度：69%
-          ...
-Agent：北京今天天气晴朗，气温23度，体感25度...
-```
-
-### 2. AG-UI 协议端点（POST /ag-ui）
-
-```
-前端 → POST /ag-ui
-  Body: RunAgentInput JSON
-
-后端 → SSE 流式响应
-  data: {"type":"RUN_STARTED","threadId":"...","runId":"..."}
-  data: {"type":"TEXT_MESSAGE_CONTENT","messageId":"...","delta":"你好"}
-  data: {"type":"TEXT_MESSAGE_END","messageId":"..."}
-  data: {"type":"RUN_FINISHED","threadId":"...","runId":"..."}
-```
-
-### 3. 调试信息推送（WebSocket /debug/ws）
-
-```
-后端 → 推送调试消息
-  {"type":"client_request","timestamp":...,"data":{"request":{...}}}
-  {"type":"agui_transform","timestamp":...,"data":{"direction":"request","input":{...},"output":{...}}}
-  {"type":"agent_event","timestamp":...,"data":{"eventType":"Content","event":{...}}}
-```
-
-### 4. 协议转换流程
-
-**请求转换：**
-```
-AG-UI RunAgentInput          AgentRequest
-├─ threadId                  → session_id
-├─ runId                     → id
-├─ messages[]                → input[]
-│   ├─ role: "user"         → role: Role.USER
-│   ├─ role: "assistant"    → role: Role.ASSISTANT
-│   ├─ role: "system"       → role: Role.SYSTEM
-│   ├─ role: "developer"    → role: Role.SYSTEM
-│   ├─ role: "tool"         → role: Role.TOOL
-│   └─ tool_calls           → FUNCTION_CALL
-├─ tools[]                   → tools[]
-├─ forwardedProps            → user_id (提取)
-└─ state                     → state
-```
-
-**响应转换：**
-```
-Agent 事件                    AG-UI 事件
-├─ Content(TextContent)      → TEXT_MESSAGE_CONTENT
-├─ Content(DataContent)      → TOOL_CALL_START/ARGS/END/RESULT
-├─ Message(completed)        → TEXT_MESSAGE_END
-├─ BaseResponse(completed)    → RUN_FINISHED
-└─ BaseResponse(failed)      → RUN_ERROR
-```
-
----
-
-## 环境变量
-
-| 变量名 | 默认值 | 说明 |
-|--------|--------|------|
-| ANTHROPIC_AUTH_TOKEN | 内置密钥 | Anthropic 兼容 API 密钥 |
-| ANTHROPIC_BASE_URL | Volcengine | API 基础 URL |
-| ANTHROPIC_MODEL | GLM-5.1 | 模型名称 |
-| WTTR_URL | https://wttr.in | 天气服务地址（wttr.in 免费 API，无需 Key） |
-
-配置方式：
-```bash
-export ANTHROPIC_AUTH_TOKEN="your-api-key"
-export ANTHROPIC_BASE_URL="https://api.example.com"
-export ANTHROPIC_MODEL="gpt-4"
-# 天气服务使用默认值即可，如需替换可设置：
-# export WTTR_URL="https://your-weather-api.example.com"
-```
+覆盖:协议转换单元测试、SSE 端点集成测试、WebSocket 冒烟测试。CI(GitHub Actions)在每次 push/PR 自动运行后端测试 + 前端构建。
 
 ---
 
 ## 设计说明
 
-### 为什么不使用 AgentApp？
+<details>
+<summary>为什么不用 agentscope 自带的 AgentApp 框架?</summary>
 
-- **目标不同**：本项目是为了理解 AG-UI 协议，而非使用框架
-- **透明性**：自己控制所有步骤，调试面板可以看到一切
-- **独立性**：不依赖 `agentscope_runtime.engine` 框架代码
-- **可复用**：转换器可以独立用于其他项目
+- **目标不同**:这个项目是为了**吃透 AG-UI 协议**,不是用框架。自己实现转换层才能看清每一步。
+- **透明性**:调试面板要能看到协议转换的每一步,用框架的话转换逻辑被包起来了。
+- **可复用**:转换器(`agui_adapter`)不依赖 `agentscope_runtime.engine` 框架代码,可独立复用到其他 Agent 框架。
 
-### 为什么使用独立 WebSocket 推送调试信息？
+</details>
 
-- **实时性**：AG-UI 的 SSE 响应流已经在 `/ag-ui` 端点上，不能复用同一通道
-- **独立性**：调试信息和业务流分离，互不影响
-- **简单性**：WebSocket 双向通信，前端可以发送控制命令
+<details>
+<summary>为什么调试信息走独立 WebSocket,不复用 SSE 通道?</summary>
 
----
+- **隔离**:SSE 通道跑的是 AG-UI 业务事件,前端 BlockReconstructor 在消费它。塞调试信息进去会污染协议。
+- **独立性**:生产环境可关掉调试通道不影响业务;调试通道双向,前端还能发控制命令。
+- **调试即真实**:调试面板看到的 delta 和业务流收到的是同一份数据(同一批 AG-UI 事件双路推送)。
 
-## 扩展建议
-
-### 1. 添加更多模型支持
-
-当前支持 Anthropic 兼容 API，可以扩展支持：
-- OpenAI API
-- DashScope
-- 本地模型（Ollama、vLLM）
-
-### 2. 添加更多工具
-
-当前已注册工具：
-- `get_weather`（实时天气查询）—— 调用 [wttr.in](https://wttr.in) 免费 API，支持中英文城市名，返回温度、湿度、风速等详细信息
-
-可以继续添加：
-- `search_web`（网络搜索）
-- `calculator`（计算器）
-- `execute_python_code`（代码执行）
-
-### 3. 添加更多 AG-UI 事件
-
-当前支持：
-- `TEXT_MESSAGE_START` / `TEXT_MESSAGE_CONTENT` / `TEXT_MESSAGE_END`
-- `TOOL_CALL_START` / `TOOL_CALL_ARGS` / `TOOL_CALL_END` / `TOOL_CALL_RESULT`
-- `RUN_STARTED` / `RUN_FINISHED` / `RUN_ERROR`
-
-可扩展：
-- `REASONING_START` / `REASONING_MESSAGE_CONTENT` / `REASONING_END`
-- `STATE_SNAPSHOT` / `STATE_DELTA`
-- `MESSAGES_SNAPSHOT`
-
-### 4. 添加 Session 持久化
-
-当前使用 `InMemoryMemory`，可以添加：
-- Redis Session（持久化存储）
-- 多用户支持
-- 对话历史管理
+</details>
 
 ---
 
-## 注意事项
+## 扩展方向
 
-1. **API 密钥安全**
-   - 生产环境应使用环境变量配置
-   - 不要在代码中硬编码密钥
-   - 定期轮换密钥
-
-2. **并发控制**
-   - 当前没有并发控制
-   - 生产环境应添加信号量或队列
-   - 防止同时运行多个 Agent 导致资源耗尽
-
-3. **错误处理**
-   - 当前有基本的错误处理
-   - 生产环境应添加更完善的日志和监控
-
-4. **性能优化**
-   - 当前是单进程
-   - 生产环境应使用多进程或多线程
+- [ ] 增加更多工具(`search_web` / `calculator` / `execute_python_code`),支持多步 ReAct 推理
+- [ ] Agent 效果评测闭环(准确率、工具调用成功率、平均步数)
+- [ ] Session 持久化(Redis)+ 多用户并发支持
+- [ ] 更多 AG-UI 事件(`REASONING_*` / `STATE_SNAPSHOT` / `STATE_DELTA`)
 
 ---
 
-## 版本历史
+## License
 
-### v1.1.0
-- `get_weather` 工具升级为真实网络查询（wttr.in API），支持中英文城市名
-- 返回完整的天气信息：温度、体感温度、湿度、风速、能见度、紫外线指数
-- 新增超时、网络断开、城市名错误等异常场景的友好提示
-- 新增 `WTTR_URL` 环境变量，支持自定义天气服务地址
-
-### v1.0.0
-- 初始版本
-- 独立实现 AG-UI 协议端点
-- 实现 WebSocket 调试推送
-- 实现完整的协议转换可视化
-- 支持 Anthropic 兼容 API
-- 配套 React + Vite 前端调试界面
-
----
-
-
+MIT
