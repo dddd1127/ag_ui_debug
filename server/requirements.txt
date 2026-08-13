@@ -15,7 +15,10 @@
 fastapi>=0.104.0
 uvicorn[standard]>=0.24.0
 pydantic>=2.11.7
-agentscope>=1.0.14,<2.0.0
+# 关键：必须钉死 agentscope 1.x 具体版本。
+# 2.x 将 ToolUseBlock 改名为 ToolCallBlock，本项目代码基于 1.x 的 ToolUseBlock，
+# 装 2.x 会导致 ImportError。用 == 消除 pip 解析歧义，避免被装成 2.x。
+agentscope==1.0.21
 ag-ui-protocol>=0.1.10
 fakeredis>=2.31.0
 python-dotenv>=1.0.1
