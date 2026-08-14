@@ -27,9 +27,8 @@ jobs:
 
       - name: Verify dependency versions
         run: |
-          python -c "import agentscope; print('agentscope', agentscope.__version__)"
-          python -c "import mcp; print('mcp', mcp.__version__)"
-          python -c "from agentscope.message import ToolUseBlock; print('ToolUseBlock import OK')"
+          python -c "import importlib.metadata as m; print('agentscope', m.version('agentscope')); print('mcp', m.version('mcp'))"
+          python -c "import agentscope; from agentscope.message import ToolUseBlock; print('agentscope import chain OK')"
 
       - name: Run backend tests
         run: pytest -v
